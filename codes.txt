@@ -1,0 +1,313 @@
+# Input: number of nodes and edges
+n = int(input("Enter number of nodes: "))
+e = int(input("Enter number of edges: "))
+
+# Initialize empty adjacency list
+graph = {i: [] for i in range(n)}
+
+print("Enter edges (u v):")
+for _ in range(e):
+    u, v = map(int, input().split())
+    graph[u].append(v)
+    graph[v].append(u)  # Undirected graph
+
+print("Adjacency List:", graph)
+
+or
+
+n = int(input("Enter number of nodes: "))
+graph = {}
+
+for i in range(n):
+    neighbors = list(map(int, input(f"Enter neighbors of node {i}: ").split()))
+    graph[i] = neighbors
+
+..........................................................................................................................................
+
+def dfs(graph, node, visited=None):
+    if visited is None:
+        visited = set()
+    
+    if node not in visited:
+        print(node, end=" ")
+        visited.add(node)
+        for neighbor in graph[node]:
+            dfs(graph, neighbor, visited)
+
+# Example usage:
+print("DFS traversal:")
+dfs(graph, 'A')
+
+..........................................................................................................................................
+
+from collections import deque
+
+def bfs(graph, start):
+    visited = set()
+    queue = deque([start])
+    
+    while queue:
+        node = queue.popleft()
+        if node not in visited:
+            print(node, end=" ")
+            visited.add(node)
+            queue.extend(graph[node])
+
+# Example usage:
+print("\nBFS traversal:")
+bfs(graph, 'A')
+
+..........................................................................................................................................
+
+def selection_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        min_idx = i
+        # Find the minimum element in the unsorted part
+        for j in range(i + 1, n):
+            if arr[j] < arr[min_idx]:
+                min_idx = j
+        # Swap the found minimum with the first unsorted element
+        arr[i], arr[min_idx] = arr[min_idx], arr[i]
+
+# Example usage
+arr = [64, 25, 12, 22, 11]
+selection_sort(arr)
+print("Sorted array:", arr)
+
+..........................................................................................................................................
+
+import heapq
+
+def prim(graph, start):
+    visited = set()
+    min_heap = [(0, start)]  # (cost, node)
+    total_cost = 0
+
+    while min_heap:
+        cost, node = heapq.heappop(min_heap)
+        if node in visited:
+            continue
+        visited.add(node)
+        total_cost += cost
+        print(f"Visited {node}, cost so far: {total_cost}")
+        
+        for neighbor, weight in graph[node]:
+            if neighbor not in visited:
+                heapq.heappush(min_heap, (weight, neighbor))
+
+    return total_cost
+
+cost = prim(graph, 'A')
+print("Total minimum cost:", cost)
+
+..........................................................................................................................................
+
+def print_board(board):
+    print("+---+---+---+")
+    for row in range(0, 9, 3):
+        row_visual = "|"
+        for tile in board[row:row + 3]:
+            if tile == 0: 
+                row_visual += "   |"  
+            else:
+                row_visual += f" {tile} |"
+        print(row_visual)
+        print("+---+---+---+")
+def heuristic(board, goal_state):
+    distance = 0
+    for i in range(9):
+        if board[i] != 0:
+            x1, y1 = divmod(i, 3)
+            x2, y2 = divmod(goal_state.index(board[i]), 3)
+            distance += abs(x1 - x2) + abs(y1 - y2)
+    return distance
+
+def move_tile(board, move, blank_pos):
+    new_board = board[:]
+    new_blank_pos = blank_pos + move
+    new_board[blank_pos], new_board[new_blank_pos] = new_board[new_blank_pos], new_board[blank_pos]
+    return new_board
+
+def a_star(start_state, goal_state):
+    open_list = [(start_state, 0, heuristic(start_state, goal_state))]
+    closed_list = set()
+
+    while open_list:
+        current_state, depth, _ = open_list.pop(0)
+        print(f"Step {depth + 1}:")  
+        print_board(current_state)  
+        print() 
+        
+        if current_state == goal_state:
+            return current_state, depth
+        
+        closed_list.add(tuple(current_state))
+        blank_pos = current_state.index(0)
+        moves = [(-3, 'U'), (3, 'D'), (-1, 'L'), (1, 'R')] 
+        
+        for move, _ in moves:
+            if move == -3 and blank_pos < 3: continue  
+            if move == 3 and blank_pos > 5: continue  
+            if move == -1 and blank_pos % 3 == 0: continue 
+            if move == 1 and blank_pos % 3 == 2: continue   
+            
+            new_board = move_tile(current_state, move, blank_pos)
+            if tuple(new_board) in closed_list:
+                continue
+            
+            open_list.append((new_board, depth + 1, depth + 1 + heuristic(new_board, goal_state)))
+        
+        open_list.sort(key=lambda x: x[2])  
+    
+    return None, None
+
+def print_solution(solution):
+    print("Solution path:")
+    print_board(solution)
+
+initial_state = list(map(int, input("Enter initial state (9 numbers separated by space): ").split()))
+goal_state = list(map(int, input("Enter goal state (9 numbers separated by space): ").split()))
+
+solution, steps = a_star(initial_state, goal_state)
+
+if solution:
+    print(f"Solution found in {steps} steps:")
+    print_solution(solution)
+else:
+    print("No solution exists.")
+
+..........................................................................................................................................
+
+def fcfs(processes, arrival_time, burst_time):
+    n = len(processes)
+    start_time = [0] * n
+    finish_time = [0] * n
+    waiting_time = [0] * n
+    turnaround_time = [0] * n
+
+    for i in range(n):
+        if i == 0:
+            start_time[i] = arrival_time[i]
+        else:
+            start_time[i] = max(finish_time[i - 1], arrival_time[i])
+
+        finish_time[i] = start_time[i] + burst_time[i]
+        turnaround_time[i] = finish_time[i] - arrival_time[i]
+        waiting_time[i] = turnaround_time[i] - burst_time[i]
+
+    # Print results
+    print("PID\tAT\tBT\tST\tFT\tWT\tTAT")
+    for i in range(n):
+        print(f"{processes[i]}\t{arrival_time[i]}\t{burst_time[i]}\t"
+              f"{start_time[i]}\t{finish_time[i]}\t{waiting_time[i]}\t{turnaround_time[i]}")
+
+..........................................................................................................................................
+
+def is_safe(board, row, col, N):
+    for i in range(col):
+        if board[row][i] == 1:
+            return False
+    for i, j in zip(range(row, -1, -1), range(col, -1, -1)):
+        if board[i][j] == 1:
+            return False
+    for i, j in zip(range(row, N), range(col, -1, -1)):
+        if board[i][j] == 1:
+            return False
+    return True
+
+
+def solve_n_queens(board, col, N):
+    if col >= N:
+        return True
+    for i in range(N):
+        if is_safe(board, i, col, N):
+            board[i][col] = 1
+            if solve_n_queens(board, col + 1, N):
+                return True
+            board[i][col] = 0
+    return False
+
+
+def solve_n_queens_problem(N):
+    board = [[0 for _ in range(N)] for _ in range(N)]
+    if not solve_n_queens(board, 0, N):
+        print("Solution does not exist")
+        return False
+    print_board(board)
+    return True
+
+
+def print_board(board):
+    for row in board:
+        print(" ".join("Q" if x == 1 else "." for x in row))
+
+
+
+n = int(input("Enter the number of queens to be placed : "))  
+solve_n_queens_problem(n)
+
+..........................................................................................................................................
+
+def is_safe(node, color, graph, colors_assigned):
+    for neighbor in graph[node]:
+        if colors_assigned[neighbor] == color:
+            return False
+    return True
+
+def graph_coloring(graph, m, colors_assigned, node=0):
+    if node == len(graph):
+        return True  # All nodes colored
+
+    for color in range(1, m + 1):  # Try colors 1 to m
+        if is_safe(node, color, graph, colors_assigned):
+            colors_assigned[node] = color
+            if graph_coloring(graph, m, colors_assigned, node + 1):
+                return True
+            colors_assigned[node] = 0  # Backtrack
+
+    return False  # No color leads to solution
+
+def solve_graph_coloring(graph, m):
+    colors_assigned = [0] * len(graph)
+    if graph_coloring(graph, m, colors_assigned):
+        return colors_assigned
+    else:
+        return None
+
+..........................................................................................................................................
+
+def chatbot():
+    print("👋 Hello! Welcome to QuickShop Support. How can I help you today?")
+    print("Type 'exit' to end the chat.\n")
+
+    while True:
+        user = input("You: ").lower()
+
+        if user == 'exit':
+            print("Bot: Thank you for chatting with us! Have a great day 😊")
+            break
+
+        elif "shipping" in user:
+            print("Bot: We offer free shipping for orders over $50. Delivery takes 3–5 business days.")
+
+        elif "return" in user:
+            print("Bot: You can return products within 30 days of delivery. Please keep the receipt.")
+
+        elif "order status" in user or "track" in user:
+            print("Bot: Please log in to your account and go to 'My Orders' to track your order.")
+
+        elif "contact" in user or "support" in user:
+            print("Bot: You can reach us at support@quickshop.com or call 1800-123-4567.")
+
+        elif "hours" in user or "open" in user:
+            print("Bot: We're open 9 AM to 9 PM, Monday through Saturday.")
+
+        else:
+            print("Bot: Sorry, I didn't understand that. Could you please rephrase or ask something else?")
+
+# Run the chatbot
+chatbot()
+
+..........................................................................................................................................
+
