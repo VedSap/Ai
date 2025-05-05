@@ -24,6 +24,21 @@ for i in range(n):
 
 ..........................................................................................................................................
 
+weighted graph
+
+def wgraph():
+    n = int(input("Enter number of edges: "))
+    edges = []
+    for _ in range(n):
+        u, v, w = map(int, input("enter vertex 1,vertex 2 and weight:").split())
+        edges.append((u, v, w))
+        graph = defaultdict(list)
+        for u, v, w in edges:
+            graph[u].append((v, w))
+            graph[v].append((u, w))
+    return graph
+..........................................................................................................................................
+
 def dfs(graph, node, visited=None):
     if visited is None:
         visited = set()
@@ -114,6 +129,7 @@ def print_board(board):
                 row_visual += f" {tile} |"
         print(row_visual)
         print("+---+---+---+")
+
 def heuristic(board, goal_state):
     distance = 0
     for i in range(9):
@@ -274,6 +290,8 @@ def solve_graph_coloring(graph, m):
         return colors_assigned
     else:
         return None
+
+solution = solve_graph_coloring(graph, m)
 
 ..........................................................................................................................................
 
